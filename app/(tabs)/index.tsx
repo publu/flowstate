@@ -167,24 +167,26 @@ export default function TodayScreen() {
         })}
       </View>
 
-      {/* Avoid */}
-      {content.avoid.length > 0 && (
+      {/* Avoid - show all encyclopedia avoids */}
+      {enc.avoids.length > 0 && (
         <View style={[styles.card, styles.avoidCard]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardEmoji}>{'\u{1F6A8}'}</Text>
             <Text style={[styles.cardTitle, { color: '#F87171' }]}>{"Don't do this"}</Text>
           </View>
-          {content.avoid.map((item, i) => (
-            <View key={i} style={styles.avoidRow}>
-              <Text style={styles.avoidX}>{'\u2715'}</Text>
-              <Text style={styles.avoidText}>{item}</Text>
+          {enc.avoids.map((item, i) => (
+            <View key={i} style={styles.avoidItemCard}>
+              <View style={styles.avoidRow}>
+                <Text style={[styles.avoidX, item.severity === 'nuclear' && { fontSize: 16 }]}>
+                  {item.severity === 'nuclear' ? '\u{1F4A3}' : '\u2715'}
+                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.avoidText}>{item.text}</Text>
+                  <Text style={styles.avoidWhy}>{item.why}</Text>
+                </View>
+              </View>
             </View>
           ))}
-          {enc.avoids.length > content.avoid.length && (
-            <Text style={styles.avoidMore}>
-              +{enc.avoids.length - content.avoid.length} more in the full guide
-            </Text>
-          )}
         </View>
       )}
 
@@ -425,10 +427,15 @@ const styles = StyleSheet.create({
   avoidCard: {
     borderColor: '#F8717130',
   },
+  avoidItemCard: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
   avoidRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: spacing.sm,
   },
   avoidX: {
     fontSize: 13,
@@ -439,15 +446,16 @@ const styles = StyleSheet.create({
   },
   avoidText: {
     fontSize: font.size.sm,
-    color: colors.textSecondary,
-    flex: 1,
+    color: '#F87171',
+    fontWeight: font.weight.medium,
     lineHeight: 22,
   },
-  avoidMore: {
+  avoidWhy: {
     fontSize: font.size.xs,
-    color: '#F87171',
-    marginTop: spacing.sm,
-    opacity: 0.7,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginTop: 4,
+    opacity: 0.8,
   },
   checkinCta: {
     flexDirection: 'row',
