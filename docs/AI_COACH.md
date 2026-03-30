@@ -71,15 +71,47 @@ What NOT to do:
   she's pushing back"
 ```
 
-## API Architecture
+## Webhook Architecture
+
+### Overview
+FlowState calls into Bhat (Railway-hosted Claude instance) via a secured webhook. All AI features route through this single endpoint.
 
 ### Endpoint
-POST to Bhat API (Railway-hosted Claude instance) with structured context.
+```
+POST https://bhat.up.railway.app/api/flowstate
+```
+
+### Authentication & Security
+
+**API Key**:
+- Each FlowState install generates a device-specific UUID on first launch
+- The webhook requires an `X-FlowState-Key` header with a shared secret
+- The shared secret is embedded in the app build (rotatable via app update)
+- Device UUID is sent in `X-Device-ID` header for rate limiting
+
+**Rate Limiting (enforced server-side)**:
+- **Per device**: 20 requests/hour, 100 requests/day
+- **Per IP**: 50 requests/hour (catches abuse even if device IDs are spoofed)
+- **Global**: 5000 requests/day (cost ceiling -- at ~$0.02/req that's $100/day max)
+- Returns `429 Too Many Requests` with `Retry-After` header when exceeded
+- Rate limit state stored in-memory on Railway (resets on deploy, which is fine)
+
+**Request Validation**:
+- Reject payloads > 10KB (observations + context shouldn't exceed this)
+- Validate JSON schema before forwarding to Claude
+- Strip any fields not in the expected schema (prevent prompt injection via extra fields)
+- Require `Content-Type: application/json`
+
+**Anti-Abuse**:
+- Device IDs that hit rate limits 3x in a day get soft-banned for 24h
+- No PII in requests -- observations are behavioral text, no names or identifying info
+- Server logs request counts only, not payloads
 
 ### Request Payload
 ```json
 {
   "type": "coach" | "observe",
+  "device_id": "uuid-v4",
   "cycle_context": {
     "estimated_day": 24,
     "phase": "luteal_late",
@@ -108,9 +140,28 @@ POST to Bhat API (Railway-hosted Claude instance) with structured context.
   "estimated_phase": "luteal_late",
   "estimated_day_range": [22, 26],
   "confidence": 0.85,
-  "suggested_actions": [...]
+  "suggested_actions": [...],
+  "rate_limit": {
+    "remaining_hour": 17,
+    "remaining_day": 92,
+    "reset_at": "2026-03-30T08:00:00Z"
+  }
 }
 ```
+
+### Webhook Server Implementation (Bhat side)
+
+The webhook handler on Bhat:
+1. Validates `X-FlowState-Key` header against stored secret
+2. Checks rate limits for `X-Device-ID` and source IP
+3. Validates + sanitizes the JSON payload
+4. Builds a system prompt with:
+   - Full hormonal context for the estimated day
+   - The complete biology of the current phase
+   - Role instructions: respond with empathy, explain hormones, give actionable advice
+   - Safety instructions: NEVER be judgmental about the partner, never diagnose medical conditions
+5. Calls Claude API with the constructed prompt
+6. Returns structured response with rate limit info in body
 
 ### System Prompt for Coach Mode
 The AI receives:
@@ -120,12 +171,15 @@ The AI receives:
 4. Instruction to respond with empathy, biology, and actionable advice
 5. Instruction to NEVER be judgmental about the partner
 6. Instruction to explain the "why" (hormones) before the "what to do"
+7. Instruction to never diagnose or replace medical advice
 
 ### Privacy
 - Observations stored locally on device
-- Only sent to API when user explicitly asks for coaching or estimation
-- No persistent server-side storage of observations
-- API is stateless -- all context sent per request
+- Only sent to webhook when user explicitly asks for coaching or estimation
+- No persistent server-side storage of observations or user data
+- Webhook is stateless -- all context sent per request
+- Rate limit counters are the only server-side state (in-memory, no DB)
+- Server logs request counts and device IDs only, never payloads
 
 ## Implementation Phases
 
