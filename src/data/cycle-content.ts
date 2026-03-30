@@ -32,7 +32,7 @@ export const cycleContent: DayContent[] = [
       'Don\'t push for high-energy plans tonight',
       'Don\'t comment on her appearance if she looks tired',
     ],
-    hormones: { estrogen: 0.10, progesterone: 0.05, testosterone: 0.15, prostaglandins: 0.90, serotonin: 0.15 },
+    hormones: { estrogen: 0.10, progesterone: 0.05, testosterone: 0.15, prostaglandins: 1.0, serotonin: 0.15 },
   },
   {
     day: 2,
@@ -397,7 +397,7 @@ export const cycleContent: DayContent[] = [
       'Don\'t waste this on a forgettable evening -- she\'ll remember how you show up during her peak',
       'If you\'re not trying to conceive, this is the fertility window -- be mindful about contraception',
     ],
-    hormones: { estrogen: 0.95, progesterone: 0.10, testosterone: 0.90, prostaglandins: 0.05, serotonin: 0.92 },
+    hormones: { estrogen: 1.0, progesterone: 0.10, testosterone: 1.0, prostaglandins: 0.05, serotonin: 1.0 },
   },
   {
     day: 15,
@@ -627,7 +627,7 @@ export const cycleContent: DayContent[] = [
       'Don\'t comment on what she\'s eating or how much',
       'Don\'t take emotional distance personally',
     ],
-    hormones: { estrogen: 0.45, progesterone: 0.90, testosterone: 0.22, prostaglandins: 0.12, serotonin: 0.42 },
+    hormones: { estrogen: 0.45, progesterone: 1.0, testosterone: 0.22, prostaglandins: 0.12, serotonin: 0.42 },
   },
   {
     day: 23,

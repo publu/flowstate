@@ -6,6 +6,11 @@ import { useCycleData } from '../../src/hooks/useCycleData';
 import { colors, spacing, radius, font } from '../../src/constants/theme';
 import { getPhaseInfo, categoryLabels } from '../../src/constants/phases';
 import { HormoneChart } from '../../src/components/HormoneChart';
+import { VibeMeters } from '../../src/components/VibeMeters';
+import { encyclopedia } from '../../src/data/encyclopedia';
+import { ActionCategory } from '../../src/types';
+
+const categoryOrder: ActionCategory[] = ['food', 'date', 'physical_touch', 'words', 'logistics', 'gift'];
 
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
@@ -13,6 +18,7 @@ export default function TodayScreen() {
   const { cycleDay, phase, content, daysUntilPeriod, confidence, config } = useCycleData();
   const phaseInfo = getPhaseInfo(phase);
   const cycleLength = config?.cycleLength ?? 28;
+  const enc = encyclopedia[phase];
 
   return (
     <ScrollView
@@ -43,7 +49,6 @@ export default function TodayScreen() {
           </View>
         )}
 
-        {/* Period countdown */}
         <View style={[styles.countdownRow, { backgroundColor: phaseInfo.color + '12' }]}>
           <Text style={styles.countdownIcon}>{'\u{1F4C5}'}</Text>
           <Text style={styles.countdownText}>
@@ -55,7 +60,16 @@ export default function TodayScreen() {
         </View>
       </View>
 
-      {/* Biology / what's happening */}
+      {/* Vibe Check */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardEmoji}>{'\u2728'}</Text>
+          <Text style={styles.cardTitle}>The vibe check</Text>
+        </View>
+        <VibeMeters indicators={enc.indicators} />
+      </View>
+
+      {/* Biology */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardEmoji}>{'\u{1F9EC}'}</Text>
@@ -73,7 +87,7 @@ export default function TodayScreen() {
         <HormoneChart hormones={content.hormones} />
       </View>
 
-      {/* How she might be feeling */}
+      {/* Feelings */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardEmoji}>{'\u{1F49C}'}</Text>
@@ -87,48 +101,73 @@ export default function TodayScreen() {
         ))}
       </View>
 
-      {/* What you can do - grouped by category */}
+      {/* What you can do - by category, tappable */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardEmoji}>{'\u{1F3AF}'}</Text>
-          <Text style={styles.cardTitle}>What you can do today</Text>
+          <Text style={styles.cardTitle}>What you can do</Text>
         </View>
-        {content.actions.map((action, i) => {
-          const cat = categoryLabels[action.category];
-          return (
-            <View key={i} style={styles.actionRow}>
-              <View style={[styles.actionIcon, {
-                backgroundColor:
-                  action.effort === 'low' ? '#4ADE8015' :
-                  action.effort === 'medium' ? '#FACC1515' :
-                  '#FB923C15',
-              }]}>
-                <Text style={styles.actionEmoji}>{cat?.emoji || '\u2022'}</Text>
-              </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionText}>{action.text}</Text>
-                <View style={styles.actionMeta}>
-                  <Text style={styles.actionCategory}>{cat?.label}</Text>
-                  <View style={[
-                    styles.effortBadge,
-                    action.effort === 'low' && styles.effortLow,
-                    action.effort === 'medium' && styles.effortMed,
-                    action.effort === 'high' && styles.effortHigh,
-                  ]}>
-                    <Text style={[styles.effortText, {
-                      color: action.effort === 'low' ? '#4ADE80' :
-                             action.effort === 'medium' ? '#FACC15' :
-                             '#FB923C',
-                    }]}>{action.effort}</Text>
-                  </View>
+        <Text style={styles.sectionHint}>Tap any category to see the full playbook</Text>
+
+        <View style={styles.categoryGrid}>
+          {categoryOrder.map((catKey) => {
+            const cat = categoryLabels[catKey];
+            const actions = enc.actions[catKey] || [];
+            const count = actions.length;
+            const preview = actions.slice(0, 2);
+            return (
+              <TouchableOpacity
+                key={catKey}
+                style={styles.categoryCard}
+                onPress={() => router.push({ pathname: '/category/[category]', params: { category: catKey } })}
+                activeOpacity={0.7}
+              >
+                <View style={styles.categoryTop}>
+                  <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+                  <Text style={styles.categoryCount}>{count}</Text>
                 </View>
+                <Text style={styles.categoryLabel}>{cat.label}</Text>
+                {preview.map((a, i) => (
+                  <Text key={i} style={styles.categoryPreview} numberOfLines={1}>{a.text}</Text>
+                ))}
+                <Text style={styles.categoryMore}>See all {'\u203A'}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Today's picks - a few highlighted actions */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardEmoji}>{'\u{1F4A1}'}</Text>
+          <Text style={styles.cardTitle}>{"Today's top picks"}</Text>
+        </View>
+        {content.actions.slice(0, 5).map((action, i) => {
+          const cat = categoryLabels[action.category];
+          const effortColor = action.effort === 'low' ? '#4ADE80' : action.effort === 'medium' ? '#FACC15' : '#FB923C';
+          const effortWord = action.effort === 'low' ? 'Easy win' : action.effort === 'medium' ? 'Worth it' : 'Go big';
+          return (
+            <TouchableOpacity
+              key={i}
+              style={styles.pickRow}
+              onPress={() => router.push({ pathname: '/category/[category]', params: { category: action.category } })}
+              activeOpacity={0.7}
+            >
+              <View style={styles.pickIcon}>
+                <Text style={styles.pickEmoji}>{cat?.emoji || '\u2022'}</Text>
               </View>
-            </View>
+              <View style={styles.pickContent}>
+                <Text style={styles.pickText}>{action.text}</Text>
+                <Text style={[styles.pickEffort, { color: effortColor }]}>{effortWord}</Text>
+              </View>
+              <Text style={styles.pickArrow}>{'\u203A'}</Text>
+            </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* What to avoid */}
+      {/* Avoid */}
       {content.avoid.length > 0 && (
         <View style={[styles.card, styles.avoidCard]}>
           <View style={styles.cardHeader}>
@@ -141,6 +180,11 @@ export default function TodayScreen() {
               <Text style={styles.avoidText}>{item}</Text>
             </View>
           ))}
+          {enc.avoids.length > content.avoid.length && (
+            <Text style={styles.avoidMore}>
+              +{enc.avoids.length - content.avoid.length} more in the full guide
+            </Text>
+          )}
         </View>
       )}
 
@@ -261,6 +305,13 @@ const styles = StyleSheet.create({
     fontWeight: font.weight.semibold,
     color: colors.textPrimary,
   },
+  sectionHint: {
+    fontSize: font.size.xs,
+    color: colors.textSecondary,
+    opacity: 0.6,
+    marginBottom: spacing.md,
+    marginTop: -spacing.sm,
+  },
   biology: {
     fontSize: font.size.sm,
     color: colors.textSecondary,
@@ -284,58 +335,92 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 22,
   },
-  actionRow: {
+  categoryGrid: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  actionIcon: {
+  categoryCard: {
+    width: '48%' as any,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    minHeight: 140,
+  },
+  categoryTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  categoryEmoji: {
+    fontSize: 24,
+  },
+  categoryCount: {
+    fontSize: font.size.xs,
+    color: colors.textSecondary,
+    backgroundColor: colors.border,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  categoryLabel: {
+    fontSize: font.size.sm,
+    fontWeight: font.weight.semibold,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  categoryPreview: {
+    fontSize: font.size.xs,
+    color: colors.textSecondary,
+    lineHeight: 16,
+    marginBottom: 2,
+    opacity: 0.7,
+  },
+  categoryMore: {
+    fontSize: font.size.xs,
+    color: colors.accent,
+    marginTop: spacing.sm,
+    fontWeight: font.weight.medium,
+  },
+  pickRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  pickIcon: {
     width: 36,
     height: 36,
     borderRadius: 10,
+    backgroundColor: colors.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
   },
-  actionEmoji: {
+  pickEmoji: {
     fontSize: 16,
   },
-  actionContent: {
+  pickContent: {
     flex: 1,
   },
-  actionText: {
+  pickText: {
     fontSize: font.size.sm,
     color: colors.textPrimary,
-    lineHeight: 22,
+    lineHeight: 20,
   },
-  actionMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    gap: spacing.sm,
-  },
-  actionCategory: {
+  pickEffort: {
     fontSize: font.size.xs,
-    color: colors.textSecondary,
-    opacity: 0.6,
-  },
-  effortBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-  },
-  effortLow: {
-    backgroundColor: '#4ADE8015',
-  },
-  effortMed: {
-    backgroundColor: '#FACC1515',
-  },
-  effortHigh: {
-    backgroundColor: '#FB923C15',
-  },
-  effortText: {
-    fontSize: font.size.xs,
+    marginTop: 2,
     fontWeight: font.weight.medium,
+  },
+  pickArrow: {
+    fontSize: 22,
+    color: colors.textSecondary,
+    opacity: 0.4,
+    marginLeft: spacing.sm,
   },
   avoidCard: {
     borderColor: '#F8717130',
@@ -357,6 +442,12 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     flex: 1,
     lineHeight: 22,
+  },
+  avoidMore: {
+    fontSize: font.size.xs,
+    color: '#F87171',
+    marginTop: spacing.sm,
+    opacity: 0.7,
   },
   checkinCta: {
     flexDirection: 'row',

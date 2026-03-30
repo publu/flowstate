@@ -73,3 +73,44 @@ export interface QuickQuestion {
     emoji: string;
   }[];
 }
+
+// Phase indicators (fun meters)
+export type IndicatorKey =
+  | 'cuddle_factor'
+  | 'romance_level'
+  | 'adventure_readiness'
+  | 'patience_meter'
+  | 'spicy_meter'
+  | 'nesting_energy'
+  | 'social_battery';
+
+export interface PhaseIndicator {
+  key: IndicatorKey;
+  label: string;
+  emoji: string;
+  value: number;
+  flavor: string;
+}
+
+// Encyclopedia
+export interface EncyclopediaAction {
+  id: string;
+  text: string;
+  detail: string;
+  category: ActionCategory;
+  effort: Effort;
+  proTip?: string;
+}
+
+export interface AvoidItem {
+  text: string;
+  why: string;
+  severity: 'gentle' | 'serious' | 'nuclear';
+}
+
+export interface PhaseEncyclopedia {
+  phase: Phase;
+  indicators: PhaseIndicator[];
+  actions: Record<ActionCategory, EncyclopediaAction[]>;
+  avoids: AvoidItem[];
+}
