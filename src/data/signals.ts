@@ -4,36 +4,34 @@ import { SignalTag, SignalOption, Phase, QuickQuestion } from '../types';
 // ONBOARDING: Big vibe cards (single tap, zero typing)
 // ============================================================
 export const vibeCards: SignalOption[] = [
-  {
-    label: "She's in her element",
-    signals: ['energetic', 'confident', 'social'],
-    emoji: '\u26A1',
-  },
-  {
-    label: "She's been really sweet",
-    signals: ['flirty', 'happy', 'confident'],
-    emoji: '\u{1F495}',
-  },
-  {
-    label: "She's been low key",
-    signals: ['quiet', 'tired'],
-    emoji: '\u{1F634}',
-  },
-  {
-    label: "She's not feeling great",
-    signals: ['cramps', 'tired', 'emotional'],
-    emoji: '\u{1F915}',
-  },
-  {
-    label: "She's been kinda moody",
-    signals: ['irritable', 'emotional', 'anxious'],
-    emoji: '\u{1F624}',
-  },
-  {
-    label: "No idea yet",
-    signals: [],
-    emoji: '\u{1F937}',
-  },
+  // Energy & mood
+  { label: "She's on fire", signals: ['energetic', 'confident'], emoji: '\u{1F525}' },
+  { label: "Really happy", signals: ['happy', 'energetic'], emoji: '\u{1F60D}' },
+  { label: "Super social", signals: ['social', 'energetic', 'confident'], emoji: '\u{1F389}' },
+  { label: "Calm & content", signals: ['happy', 'normal'], emoji: '\u{1F60C}' },
+  { label: "Creative mode", signals: ['creative', 'focused', 'energetic'], emoji: '\u{1F3A8}' },
+  { label: "Low energy", signals: ['tired'], emoji: '\u{1F4A4}' },
+  { label: "Kinda moody", signals: ['irritable', 'emotional'], emoji: '\u{1F624}' },
+  { label: "Anxious / stressed", signals: ['anxious', 'irritable'], emoji: '\u{1F630}' },
+  { label: "Emotional / teary", signals: ['emotional', 'withdrawn'], emoji: '\u{1F97A}' },
+  // Physical
+  { label: "Cramps", signals: ['cramps', 'tired'], emoji: '\u{1F915}' },
+  { label: "Headache", signals: ['headache', 'tired'], emoji: '\u{1F616}' },
+  { label: "Bloated", signals: ['bloated'], emoji: '\u{1F623}' },
+  { label: "Skin breaking out", signals: ['acne'], emoji: '\u{1F62C}' },
+  { label: "She looks glowing", signals: ['glowing', 'confident'], emoji: '\u2728' },
+  // Appetite & cravings
+  { label: "Craving sweets", signals: ['cravings'], emoji: '\u{1F36B}' },
+  { label: "Eating everything", signals: ['cravings', 'tired'], emoji: '\u{1F355}' },
+  { label: "Not hungry", signals: ['quiet', 'tired'], emoji: '\u{1F645}' },
+  // Affection & social
+  { label: "Being flirty", signals: ['flirty', 'confident'], emoji: '\u{1F48B}' },
+  { label: "Really cuddly", signals: ['flirty', 'happy'], emoji: '\u{1F917}' },
+  { label: "Wants space", signals: ['withdrawn', 'quiet'], emoji: '\u{1F6B6}' },
+  { label: "Wants to stay in", signals: ['quiet', 'withdrawn'], emoji: '\u{1F3E0}' },
+  { label: "Sleeping a lot", signals: ['tired', 'withdrawn'], emoji: '\u{1F634}' },
+  { label: "Restless at night", signals: ['anxious', 'tired'], emoji: '\u{1F319}' },
+  { label: "No idea yet", signals: [], emoji: '\u{1F937}' },
 ];
 
 // ============================================================
