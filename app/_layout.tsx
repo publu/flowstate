@@ -1,12 +1,19 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { View, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors } from '../src/constants/theme';
+
+let Wrapper: React.ComponentType<{ style?: any; children: React.ReactNode }>;
+try {
+  Wrapper = require('react-native-gesture-handler').GestureHandlerRootView;
+} catch {
+  Wrapper = View;
+}
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <Wrapper style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style="light" />
         <Stack
@@ -17,6 +24,6 @@ export default function RootLayout() {
           }}
         />
       </SafeAreaProvider>
-    </GestureHandlerRootView>
+    </Wrapper>
   );
 }
