@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import { PhaseIndicator, IndicatorKey } from '../types';
 
 interface Props {
@@ -16,12 +17,40 @@ const barColors: Record<IndicatorKey, string> = {
   social_battery: '#FBBF24',
 };
 
+function AnimatedBar({ index, value, color }: { index: number; value: number; color: string }) {
+  const [trackWidth, setTrackWidth] = useState(0);
+  const width = useSharedValue(0);
+
+  useEffect(() => {
+    if (trackWidth > 0) {
+      width.value = withDelay(
+        index * 80,
+        withTiming(trackWidth * value, { duration: 600, easing: Easing.out(Easing.cubic) }),
+      );
+    }
+  }, [trackWidth, value]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    width: width.value,
+    backgroundColor: color,
+  }));
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    setTrackWidth(e.nativeEvent.layout.width);
+  };
+
+  return (
+    <View style={styles.barTrack} onLayout={onLayout}>
+      <Animated.View style={[styles.barFill, animStyle]} />
+    </View>
+  );
+}
+
 export function VibeMeters({ indicators }: Props) {
   return (
     <View style={styles.container}>
-      {indicators.map((indicator) => {
+      {indicators.map((indicator, index) => {
         const fillColor = barColors[indicator.key] || '#9A9498';
-        const widthPercent = Math.round(indicator.value * 100);
 
         return (
           <View key={indicator.key} style={styles.row}>
@@ -29,17 +58,7 @@ export function VibeMeters({ indicators }: Props) {
               <Text style={styles.emoji}>{indicator.emoji}</Text>
               <Text style={styles.label}>{indicator.label}</Text>
             </View>
-            <View style={styles.barTrack}>
-              <View
-                style={[
-                  styles.barFill,
-                  {
-                    width: `${widthPercent}%`,
-                    backgroundColor: fillColor,
-                  },
-                ]}
-              />
-            </View>
+            <AnimatedBar index={index} value={indicator.value} color={fillColor} />
             {indicator.flavor ? (
               <Text style={styles.flavor}>{indicator.flavor}</Text>
             ) : null}
@@ -52,27 +71,27 @@ export function VibeMeters({ indicators }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 16,
+    gap: 10,
   },
   row: {
-    gap: 6,
+    gap: 4,
   },
   labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   emoji: {
-    fontSize: 20,
+    fontSize: 16,
   },
   label: {
-    fontSize: 14,
-    color: '#9A9498',
+    fontSize: 13,
+    color: '#8A8F98',
   },
   barTrack: {
     width: '100%',
-    height: 10,
-    backgroundColor: '#252530',
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 999,
     overflow: 'hidden',
   },
@@ -82,11 +101,11 @@ const styles = StyleSheet.create({
     minWidth: 4,
   },
   flavor: {
-    fontSize: 12,
-    color: '#9A9498',
+    fontSize: 11,
+    color: '#8A8F98',
     fontStyle: 'italic',
-    opacity: 0.6,
-    marginTop: 2,
-    paddingLeft: 28,
+    opacity: 0.45,
+    marginTop: 1,
+    paddingLeft: 22,
   },
 });

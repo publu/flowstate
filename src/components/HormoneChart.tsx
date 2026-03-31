@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay, Easing } from 'react-native-reanimated';
 import { HormoneLevels } from '../types';
 import { colors, spacing, radius, font } from '../constants/theme';
 
@@ -15,23 +16,42 @@ const hormoneConfig = [
   { key: 'prostaglandins' as const, label: 'Prostaglandins', color: colors.hormone.prostaglandins },
 ];
 
+function AnimatedBar({ index, value, color }: { index: number; value: number; color: string }) {
+  const [trackWidth, setTrackWidth] = useState(0);
+  const width = useSharedValue(0);
+
+  useEffect(() => {
+    if (trackWidth > 0) {
+      width.value = withDelay(
+        index * 100,
+        withTiming(trackWidth * value, { duration: 600, easing: Easing.out(Easing.cubic) }),
+      );
+    }
+  }, [trackWidth, value]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    width: width.value,
+    backgroundColor: color,
+  }));
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    setTrackWidth(e.nativeEvent.layout.width);
+  };
+
+  return (
+    <View style={styles.barTrack} onLayout={onLayout}>
+      <Animated.View style={[styles.barFill, animStyle]} />
+    </View>
+  );
+}
+
 export function HormoneChart({ hormones }: Props) {
   return (
     <View style={styles.container}>
-      {hormoneConfig.map(({ key, label, color }) => (
+      {hormoneConfig.map(({ key, label, color }, index) => (
         <View key={key} style={styles.row}>
           <Text style={styles.label}>{label}</Text>
-          <View style={styles.barTrack}>
-            <View
-              style={[
-                styles.barFill,
-                {
-                  width: `${Math.round(hormones[key] * 100)}%`,
-                  backgroundColor: color,
-                },
-              ]}
-            />
-          </View>
+          <AnimatedBar index={index} value={hormones[key]} color={color} />
         </View>
       ))}
     </View>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCycleData } from '../../src/hooks/useCycleData';
 import { colors, spacing, radius, font } from '../../src/constants/theme';
@@ -18,26 +19,26 @@ export default function InsightsScreen() {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>Cycle</Text>
+      <Animated.Text entering={FadeIn.duration(300)} style={styles.title}>Cycle</Animated.Text>
 
-      <View style={styles.ringContainer}>
+      <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.ringContainer}>
         <CycleRing
           cycleDay={cycleDay}
           cycleLength={cycleLength}
           phase={phase}
         />
-      </View>
+      </Animated.View>
 
       {confidence > 0 && confidence < 0.7 && (
-        <View style={styles.hintCard}>
+        <Animated.View entering={FadeInUp.delay(200).duration(400)} style={styles.hintCard}>
           <Text style={styles.hintText}>
             {"Rough estimate. Keep checking in to sharpen this."}
           </Text>
-        </View>
+        </Animated.View>
       )}
 
       {/* Phase legend */}
-      <View style={styles.card}>
+      <Animated.View entering={FadeInUp.delay(300).duration(400)} style={styles.card}>
         <Text style={styles.cardTitle}>Phases</Text>
         {phases.map((p) => {
           const isActive = p.key === phase;
@@ -53,19 +54,19 @@ export default function InsightsScreen() {
             </View>
           );
         })}
-      </View>
+      </Animated.View>
 
       {/* Hormones */}
-      <View style={styles.card}>
+      <Animated.View entering={FadeInUp.delay(400).duration(400)} style={styles.card}>
         <Text style={styles.cardTitle}>Current hormones</Text>
         <HormoneChart hormones={content.hormones} />
-      </View>
+      </Animated.View>
 
       {/* Next period */}
-      <View style={styles.periodCard}>
+      <Animated.View entering={FadeInUp.delay(500).duration(400)} style={styles.periodCard}>
         <Text style={styles.periodLabel}>Estimated next period</Text>
         <Text style={styles.periodDays}>~{daysUntilPeriod} days</Text>
-      </View>
+      </Animated.View>
 
       <View style={{ height: spacing.xxl }} />
     </ScrollView>
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   hintCard: {
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -104,12 +105,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(255,255,255,0.06)',
+    overflow: 'hidden',
   },
   cardTitle: {
     fontSize: font.size.md,
@@ -123,9 +125,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   phaseRowActive: {
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: radius.sm,
-    marginHorizontal: -spacing.sm,
     paddingHorizontal: spacing.sm,
   },
   phaseColor: {
@@ -150,9 +151,11 @@ const styles = StyleSheet.create({
   },
   periodCard: {
     alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderRadius: radius.lg,
     padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   periodLabel: {
     fontSize: font.size.sm,

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { CycleConfig, Phase, DayContent, Observation, SignalTag } from '../types';
 import { loadCycleConfig, saveCycleConfig, clearCycleConfig, loadObservations, saveObservations, clearObservations } from '../utils/storage';
 import { getCycleDay, getPhase, getDayContent, getDaysUntilPeriod } from '../utils/cycle';
-import { estimatePhaseFromSignals, syntheticPeriodStart } from '../utils/signals';
+import { estimateFromDatedObservations, syntheticPeriodStart } from '../utils/signals';
 
 interface UseCycleDataReturn {
   loading: boolean;
@@ -59,10 +59,9 @@ export function useCycleData(): UseCycleDataReturn {
     await saveObservations(updated);
     setObservations(updated);
 
-    // Re-estimate if we're in observation mode
+    // Re-estimate if we're in observation mode (uses dates, not flat signal pile)
     if (config && config.source === 'observation') {
-      const allSignals = updated.flatMap(o => o.signals);
-      const estimate = estimatePhaseFromSignals(allSignals);
+      const estimate = estimateFromDatedObservations(updated, config.cycleLength);
       const newStart = syntheticPeriodStart(estimate.estimatedDay, config.cycleLength);
       await saveAndSetConfig({
         ...config,

@@ -1,6 +1,26 @@
+import React, { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { colors, font } from '../../src/constants/theme';
+
+function AnimatedTabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+  const scale = useSharedValue(focused ? 1.15 : 1);
+
+  useEffect(() => {
+    scale.value = withSpring(focused ? 1.15 : 1, { damping: 12, stiffness: 200 });
+  }, [focused]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={animStyle}>
+      <Text style={{ fontSize: 22 }}>{emoji}</Text>
+    </Animated.View>
+  );
+}
 
 export default function TabLayout() {
   return (
@@ -27,8 +47,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Today',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 22 }}>{'\u{1F4A1}'}</Text>
+          tabBarIcon: ({ focused }) => (
+            <AnimatedTabIcon emoji={'\u{1F4A1}'} focused={focused} />
           ),
         }}
       />
@@ -36,8 +56,8 @@ export default function TabLayout() {
         name="insights"
         options={{
           title: 'Cycle',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 22 }}>{'\u{1F504}'}</Text>
+          tabBarIcon: ({ focused }) => (
+            <AnimatedTabIcon emoji={'\u{1F504}'} focused={focused} />
           ),
         }}
       />
@@ -45,8 +65,8 @@ export default function TabLayout() {
         name="checkin"
         options={{
           title: 'Check In',
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 22 }}>{'\u{1F4DD}'}</Text>
+          tabBarIcon: ({ focused }) => (
+            <AnimatedTabIcon emoji={'\u{1F4DD}'} focused={focused} />
           ),
         }}
       />
